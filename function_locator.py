@@ -170,6 +170,9 @@ class FunctionAnalyzer():
         # print(self.exported_functions)
 
     def locate_function_in_bin(self, function_name):
+        if not self.exported_functions:
+            print("No exported functions found in any binary")
+            return None
         for bin_path, functions in self.exported_functions.items():
             for func in functions:
                 if function_name in Utils.prep_func_name(func):
@@ -202,6 +205,11 @@ class LocatorHandler(idaapi.action_handler_t):
         global locator
         # print(locator.libraries_analyzer.libraries_graph.graph)
         # print(locator.functions_analyzer.exported_functions)
+
+        if locator.rootfs_path is None:
+            ida_kernwin.warning("Please init plugin: input the rootfs path \nEdit -> Plugins -> Function Locator")
+            return 0
+
         target_bin_path = locator.functions_analyzer.locate_function_in_bin(self.function_name)
         if not target_bin_path:
             ida_kernwin.warning("Function: %s not found in any binary" % self.function_name)
